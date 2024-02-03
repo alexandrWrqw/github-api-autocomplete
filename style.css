@@ -1,0 +1,58 @@
+body {
+	padding: 0;
+	margin: 0;
+
+	background-color: #dbdbdb;
+}
+
+ul {
+	list-style-type: none;
+	padding: 0;
+	margin: 0;
+}
+
+input {
+	padding: 0;
+	border: none;
+}
+
+.search {
+	height: 500px;
+	width: 300px;
+	margin: 0 auto;
+	padding: 70px;
+
+	background-color: #C4C4C4;
+}
+
+.search__input {
+	width: 300px;
+	font-size: 26px;
+	box-sizing: border-box;
+	padding: 10px;
+	border-bottom: 2px solid #C4C4C4;
+	border-top-right-radius: 15px;
+	border-top-left-radius: 15px;
+}
+
+.search__input:focus {
+	outline: none;
+}
+
+.search__repo-name {
+	width: 300px;
+	font-size: 18px;
+	padding: 5px 10px;
+	box-sizing: border-box;
+
+	background-color: white;
+}
+
+.search__repo-name:not(:last-child) {
+	border-bottom: 1px solid #C4C4C4;
+}
+
+.search__repo-name:last-child {
+	border-bottom-right-radius: 15px;
+	border-bottom-left-radius: 15px;
+}
