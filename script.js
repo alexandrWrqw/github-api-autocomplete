@@ -1,5 +1,6 @@
+// search and add repo in autocomplete
 const input = document.querySelector('.search__input')
-const autocompleteList = document.querySelector('.search__autocomplete')
+const repoList = document.querySelector('.search__repos')
 
 const debounce = (fn, debounceTime) => {
 	let timeout
@@ -11,37 +12,88 @@ const debounce = (fn, debounceTime) => {
 	}
 }
 
-function createAutocompleteRepo(repoData) {
+async function repoRequest(repoName, perPageVal) {
+  return await fetch(`https://api.github.com/search/repositories?q=${repoName}&per_page=${perPageVal}`)
+}
+
+function addRepoName(repoData) {
 	const element = document.createElement('li')
 	element.classList.add('search__repo-name')
 	element.insertAdjacentHTML('afterbegin', repoData.name)
-	autocompleteList.append(element)
+	repoList.append(element)
 }
 
-async function searchRepo() {
-	return await fetch(`https://api.github.com/search/repositories?q=${input.value}`).then(res => {
-		if (res.ok) {
-			res.json().then(res => {
-				let amountRepo = 0
-				
-				for (const repo of res.items) {
-					if (amountRepo < 5) createAutocompleteRepo(repo)
-					amountRepo++
-				}
-			})
-		} else {
-
-		}
-	})
+async function createRepoList() {
+  repoRequest(input.value, 5)
+  .then(res => {
+    if (res.ok) {
+      res
+      .json()
+      .then(res => {
+        for (const repo of res.items) {
+          addRepoName(repo)
+        }
+      })
+    }
+  })
 }
 
-const debouncedInputRes = debounce(() => {
-	if (input.value !== '') {
-		autocompleteList.innerHTML = ''
-		searchRepo()
-	} else {
-		autocompleteList.innerHTML = ''
-	}
-}, 400)
+function clearRepoList() {
+  repoList.innerHTML = ''
+}
 
-input.addEventListener('keyup', debouncedInputRes)
+function searchRepo() {
+  if (input.value.trim() === '') return clearRepoList()
+
+  clearRepoList()
+  createRepoList()
+}
+
+const debouncedSearch = debounce(searchRepo, 400)
+
+input.addEventListener('keyup', debouncedSearch)
+
+// ----------------------------------------------------------------------------------
+// autocomplete click --> add selected repo
+const selectedRepoList = document.querySelector('.search__selected')
+
+function addSelectedRepo(repoData) {
+  const element = document.createElement('li')
+  element.classList.add('search__repo-selected')
+  element.insertAdjacentHTML('afterbegin', 
+  `Name: ${repoData.name}<br> Owner: ${repoData.owner.login}<br> Stars: ${repoData.stargazers_count}`)
+
+  const deleteElementBtn = document.createElement('button')
+  deleteElementBtn.classList.add('search__delete-btn')
+  
+  selectedRepoList.append(element)
+  element.append(deleteElementBtn)
+}
+
+async function createSelectedRepo(repoName) {
+  repoRequest(repoName, 1)
+  .then(res => {
+    if (res.ok) {
+      res
+      .json()
+      .then(res => addSelectedRepo(res.items[0]))
+    }
+  })
+}
+
+repoList.addEventListener('click', function(e) {
+  createSelectedRepo(e.target.textContent)
+  clearRepoList()
+  input.value = ''
+})
+
+// ----------------------------------------------------------------------------------
+// click --> remove selected repo
+selectedRepoList.addEventListener('click', function(e) {
+  e.preventDefault()
+  const target = e.target
+
+  if (target.tagName === 'BUTTON') {
+    target.closest('.search__repo-selected').remove()
+  }
+})
